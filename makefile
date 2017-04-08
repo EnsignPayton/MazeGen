@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -g -Wall -std=c99 -c
 LIBS = -lpng
 
-SRC = main.c mypng.c
+SRC = main.c mypng.c maze.c
 OBJ = $(SRC:.c=.o)
 TAR = img
 
