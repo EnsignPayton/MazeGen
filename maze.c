@@ -130,19 +130,17 @@ Cell * genMaze(int width, int height)
     }
 
     int nStart = rand() % nCells;
+    int nCur = nStart;
     int nStack = 0;
-
-    Cell * startCell = &pMaze[nStart];
-    Cell * curCell = startCell;
 
     bool done = false;
     while(!done) {
-        curCell->visited = true;
+        pMaze[nCur].visited = true;
 
-        int up    = getNeighborCell(curCell->nCell, width, height, Up);
-        int down  = getNeighborCell(curCell->nCell, width, height, Down);
-        int left  = getNeighborCell(curCell->nCell, width, height, Left);
-        int right = getNeighborCell(curCell->nCell, width, height, Right);
+        int up    = getNeighborCell(nCur, width, height, Up);
+        int down  = getNeighborCell(nCur, width, height, Down);
+        int left  = getNeighborCell(nCur, width, height, Left);
+        int right = getNeighborCell(nCur, width, height, Right);
 
         bool upOk    = (up    != -1 && !pMaze[up].visited);
         bool downOk  = (down  != -1 && !pMaze[down].visited);
@@ -152,35 +150,34 @@ Cell * genMaze(int width, int height)
         int next = getRandDir(upOk, downOk, leftOk, rightOk);
         if (next == 0) {
             next = up;
-            curCell->up = true;
+            pMaze[nCur].up = true;
             pMaze[next].down = true;
         }
         if (next == 1) {
             next = down;
-            curCell->down = true;
+            pMaze[nCur].down = true;
             pMaze[next].up = true;
         }
         if (next == 2) {
             next = left;
-            curCell->left = true;
+            pMaze[nCur].left = true;
             pMaze[next].right = true;
         }
         if (next == 3) {
             next = right;
-            curCell->right = true;
+            pMaze[nCur].right = true;
             pMaze[next].left = true;
         }
 
         if (next != -1) {
             pStack[nStack] = next;
             nStack += 1;
-            curCell = &pMaze[next];
+            nCur = next;
         } else if (nStack != 0) {
-            curCell = &pMaze[pStack[nStack - 1]];
+            nCur = pStack[nStack - 1];
             nStack -= 1;
         } else {
             done = true;
-            ;
         }
     }
 
