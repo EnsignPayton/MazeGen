@@ -8,30 +8,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <time.h>
-
-// Generate a maze using randomized depth-first
-// * Start with a random cell
-// * Select random unvisited neighbor
-// * Link cells, mark new as visited
-// * Add to stack and repeat with new node
-// * When dead end, backtrack up stack
 
 typedef enum dir { Up, Down, Left, Right } Direction;
 
-// Contain node information, including visited flag and connected neighbors
-typedef struct cell {
-    int nCell;
-    // TODO: Switch to flags in single byte if this takes up too much space
-    bool visited;
-    bool up;
-    bool down;
-    bool left;
-    bool right;
-} Cell;
+/*
+ * Static (Private) Functions
+ */
 
 // Get an adjacent cell index, or -1 if none exist
-int getNeighborCell(int nCell, int width, int height, Direction dir)
+static int getNeighborCell(int nCell, int width, int height, Direction dir)
 {
     if (width < 1 || height < 1 || nCell < 0 || nCell >= width*height) {
         return -1;
@@ -50,6 +35,68 @@ int getNeighborCell(int nCell, int width, int height, Direction dir)
             return -1;
     }
 }
+
+// Get a random direction from available directions
+//-1 = NONE
+// 0 = UP
+// 1 = DOWN
+// 2 = LEFT
+// 3 = RIGHT
+static int getRandDir(bool up, bool down, bool left, bool right)
+{
+    int n = -1;
+    int r;
+
+    // One available
+    if (up && !down && !left && !right)
+        n = 0;
+    if (!up && down && !left && !right)
+        n = 1;
+    if (!up && !down && left && !right)
+        n = 2;
+    if (!up && !down == !left && right)
+        n = 3;
+
+    // Two available
+    if (up && down && !left && !right)
+        n = rand() % 2;
+    if (up && !down && left && !right)
+        n = rand() % 2 ? 0 : 2;
+    if (up && !down && !left && right)
+        n = rand() % 2 ? 0 : 3;
+    if (!up && down && left && !right)
+        n = rand() % 2 ? 1 : 2;
+    if (!up && down && !left && right)
+        n = rand() % 2 ? 1 : 3;
+    if (!up && !down && left && right)
+        n = rand() % 2 ? 2 : 3;
+
+    // Three available
+    if (up && down && left && !right) {
+        n = rand() % 3;
+    }
+    if (up && down && !left && right) {
+        r = rand() % 3;
+        n = r == 2 ? 3 : r;
+    }
+    if (up && !down && left && right) {
+        r = (rand() % 3) + 1;
+        n = r == 1 ? 0 : r;
+    }
+    if (!up && down && left && right) {
+        n = (rand() % 3) + 1;
+    }
+
+    // Four available
+    if (up && down && left && right)
+        n = rand() % 4;
+
+    return n;
+}
+
+/*
+ * Public Functions
+ */
 
 Cell * genMaze(int width, int height)
 {
@@ -72,15 +119,24 @@ Cell * genMaze(int width, int height)
         if (pMaze != NULL) free(pMaze);
         return NULL;
     }
-    
-    srand(time(NULL));
+
+    for (int i = 0; i < nCells; i++) {
+        pMaze[i].nCell = i;
+        pMaze[i].visited = false;
+        pMaze[i].up = false;
+        pMaze[i].down = false;
+        pMaze[i].left = false;
+        pMaze[i].right = false;
+    }
 
     int nStart = rand() % nCells;
+    int nStack = 0;
 
     Cell * startCell = &pMaze[nStart];
     Cell * curCell = startCell;
 
-    while(1) {
+    bool done = false;
+    while(!done) {
         curCell->visited = true;
 
         int up    = getNeighborCell(curCell->nCell, width, height, Up);
@@ -92,7 +148,43 @@ Cell * genMaze(int width, int height)
         bool downOk  = (down  != -1 && !pMaze[down].visited);
         bool leftOk  = (left  != -1 && !pMaze[left].visited);
         bool rightOk = (right != -1 && !pMaze[right].visited);
+
+        int next = getRandDir(upOk, downOk, leftOk, rightOk);
+        if (next == 0) {
+            next = up;
+            curCell->up = true;
+            pMaze[next].down = true;
+        }
+        if (next == 1) {
+            next = down;
+            curCell->down = true;
+            pMaze[next].up = true;
+        }
+        if (next == 2) {
+            next = left;
+            curCell->left = true;
+            pMaze[next].right = true;
+        }
+        if (next == 3) {
+            next = right;
+            curCell->right = true;
+            pMaze[next].left = true;
+        }
+
+        if (next != -1) {
+            pStack[nStack] = next;
+            nStack += 1;
+            curCell = &pMaze[next];
+        } else if (nStack != 0) {
+            curCell = &pMaze[pStack[nStack - 1]];
+            nStack -= 1;
+        } else {
+            done = true;
+            ;
+        }
     }
 
-    return NULL;
+    if (pStack != NULL) free(pStack);
+
+    return pMaze;
 }
