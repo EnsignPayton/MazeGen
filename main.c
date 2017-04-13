@@ -11,27 +11,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-RGB * genTestImg(int width, int height)
-{
-    RGB * pixels = malloc(width * height * sizeof(RGB));
-    if (pixels == NULL) {
-        fprintf(stderr, "Failed to allocate pixel array\n");
-        return NULL;
-    }
-
-    for (int x = 0; x < width; x++) {
-        for (int y = 0; y < height; y++) {
-            int color = rand() % 2 ? 0 : 255;
-            pixels[y*width + x].red = color;
-            pixels[y*width + x].green = color;
-            pixels[y*width + x].blue = color;
-        }
-    }
-
-    return pixels;
-}
-
-RGB * genMazeImg(Cell * pMaze, int width, int height)
+// Generate an image from a given maze
+static RGB * genMazeImg(Cell * pMaze, int width, int height)
 {
     if (pMaze == NULL || width < 1 || height < 1) {
         fprintf(stderr, "Invalid parameters\n");
@@ -91,6 +72,16 @@ RGB * genMazeImg(Cell * pMaze, int width, int height)
             }
         }
     }
+
+    // Maze ends
+    int top = rand() % width;
+    int bot = rand() % width;
+    pixels[top*2 + 1].red = 255;
+    pixels[top*2 + 1].green = 255;
+    pixels[top*2 + 1].blue = 255;
+    pixels[imgWidth*(imgHeight-1) + bot].red = 255;
+    pixels[imgWidth*(imgHeight-1) + bot].green = 255;
+    pixels[imgWidth*(imgHeight-1) + bot].blue = 255;
 
     return pixels;
 }
