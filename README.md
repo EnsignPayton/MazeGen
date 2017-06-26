@@ -1,4 +1,4 @@
-# img
+# MazeGen
 Compile with `make`.
 
 Current use is to generate a maze using randomized depth-first algorithm and output as a PNG image, black pixels being walls and white pixels being path. The image border is black except for one pixel at the top and one at the bottom - these serve as the maze ends.
